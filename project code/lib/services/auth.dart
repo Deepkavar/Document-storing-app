@@ -1,0 +1,76 @@
+import 'package:doc_guard/models/user.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class AuthService{
+   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+   // create user obj based on firebase user
+   User _userFromFirebaseUser(FirebaseUser user) {
+     return user != null ? User(uid: user.uid) : null;
+   }
+
+   // auth change user stream
+   Stream<User> get user {
+     return _auth.onAuthStateChanged
+     //.map((FirebaseUser user) => _userFromFirebaseUser(user));
+         .map(_userFromFirebaseUser);
+   }
+
+   //sign in annon
+   Future signInAnon() async{
+     try{
+         AuthResult result = await _auth.signInAnonymously();
+         FirebaseUser user = result.user;
+         return user;
+     }
+     catch(e){
+       print(e.toString());
+       return null;
+     }
+   }
+
+   //sign in with emil and password
+   Future signInWithEmailAndPassword(String email, String password) async {
+     try {
+       AuthResult result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+       FirebaseUser user = result.user;
+       // final  FirebaseUser user =await _auth.currentUser();
+       // final String uid = user.uid;
+       // print("Hello this is user : ");
+       // inputData();
+       return user;
+     } catch (error) {
+       print(error.toString());
+       return null;
+     }
+   }
+
+    //register with email and password
+   Future registerWithEmailAndPassword(String email, String password) async {
+     try {
+       AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+       FirebaseUser user = result.user;
+       return _userFromFirebaseUser(user);
+     } catch (error) {
+       print(error.toString());
+       return null;
+     }
+   }
+
+    //sign out
+   Future signOut() async {
+     try {
+       return await _auth.signOut();
+     } catch (error) {
+       print(error.toString());
+       return null;
+     }
+   }
+
+   // void inputData() async {
+   //   final FirebaseUser user = await _auth.currentUser();
+   //   final uid = user.uid.toString();
+   //   print(uid);
+   //   //return uid;
+   // }
+}
